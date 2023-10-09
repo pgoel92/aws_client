@@ -3251,6 +3251,58 @@ class Kendra {
     return QueryResult.fromJson(jsonResponse.body);
   }
 
+  Future<RetrieveResult> retrieve({
+    required String indexId,
+    AttributeFilter? attributeFilter,
+    List<DocumentRelevanceConfiguration>?
+        documentRelevanceOverrideConfigurations,
+    List<Facet>? facets,
+    int? pageNumber,
+    int? pageSize,
+    RetrieveResultType? retrieveResultTypeFilter,
+    String? queryText,
+    List<String>? requestedDocumentAttributes,
+    SortingConfiguration? sortingConfiguration,
+    SpellCorrectionConfiguration? spellCorrectionConfiguration,
+    UserContext? userContext,
+    String? visitorId,
+  }) async {
+    final headers = <String, String>{
+      'Content-Type': 'application/x-amz-json-1.1',
+      'X-Amz-Target': 'AWSKendraFrontendService.Retrieve'
+    };
+    final jsonResponse = await _protocol.send(
+      method: 'POST',
+      requestUri: '/',
+      exceptionFnMap: _exceptionFns,
+      // TODO retrieveParams
+      headers: headers,
+      payload: {
+        'IndexId': indexId,
+        if (attributeFilter != null) 'AttributeFilter': attributeFilter,
+        if (documentRelevanceOverrideConfigurations != null)
+          'DocumentRelevanceOverrideConfigurations':
+              documentRelevanceOverrideConfigurations,
+        if (facets != null) 'Facets': facets,
+        if (pageNumber != null) 'PageNumber': pageNumber,
+        if (pageSize != null) 'PageSize': pageSize,
+        if (retrieveResultTypeFilter != null)
+          'RetrieveResultTypeFilter': retrieveResultTypeFilter.toValue(),
+        if (queryText != null) 'QueryText': queryText,
+        if (requestedDocumentAttributes != null)
+          'RequestedDocumentAttributes': requestedDocumentAttributes,
+        if (sortingConfiguration != null)
+          'SortingConfiguration': sortingConfiguration,
+        if (spellCorrectionConfiguration != null)
+          'SpellCorrectionConfiguration': spellCorrectionConfiguration,
+        if (userContext != null) 'UserContext': userContext,
+        if (visitorId != null) 'VisitorId': visitorId,
+      },
+    );
+
+    return RetrieveResult.fromJson(jsonResponse.body);
+  }
+
   /// Starts a synchronization job for a data source connector. If a
   /// synchronization job is already in progress, Amazon Kendra returns a
   /// <code>ResourceInUseException</code> exception.
@@ -12762,6 +12814,208 @@ extension QueryIdentifiersEnclosingOptionFromString on String {
     }
     throw Exception(
         '$this is not known in enum QueryIdentifiersEnclosingOption');
+  }
+}
+
+class RetrieveResult {
+  /// Contains the facet results. A <code>FacetResult</code> contains the counts
+  /// for each attribute key that was specified in the <code>Facets</code> input
+  /// parameter.
+  final List<FacetResult>? facetResults;
+
+  /// The list of featured result items. Featured results are displayed at the top
+  /// of the search results page, placed above all other results for certain
+  /// queries. If there's an exact match of a retrieve, then certain documents are
+  /// featured in the search results.
+  final List<FeaturedResultsItem>? featuredResultsItems;
+
+  /// The identifier for the search. You use <code>RetrieveId</code> to identify the
+  /// search when using the feedback API.
+  final String? retrieveId;
+
+  /// The results of the search.
+  final List<RetrieveResultItem>? resultItems;
+
+  /// A list of information related to suggested spell corrections for a retrieve.
+  final List<SpellCorrectedQuery>? spellCorrectedQueries;
+
+  /// The total number of items found by the search; however, you can only
+  /// retrieve up to 100 items. For example, if the search found 192 items, you
+  /// can only retrieve the first 100 of the items.
+  final int? totalNumberOfResults;
+
+  /// A list of warning codes and their messages on problems with your retrieve.
+  ///
+  /// Amazon Kendra currently only supports one type of warning, which is a
+  /// warning on invalid syntax used in the retrieve. For examples of invalid retrieve
+  /// syntax, see <a
+  /// href="https://docs.aws.amazon.com/kendra/latest/dg/searching-example.html#searching-index-retrieve-syntax">Searching
+  /// with advanced retrieve syntax</a>.
+  final List<Warning>? warnings;
+
+  RetrieveResult({
+    this.facetResults,
+    this.featuredResultsItems,
+    this.retrieveId,
+    this.resultItems,
+    this.spellCorrectedQueries,
+    this.totalNumberOfResults,
+    this.warnings,
+  });
+
+  factory RetrieveResult.fromJson(Map<String, dynamic> json) {
+    return RetrieveResult(
+      facetResults: (json['FacetResults'] as List?)
+          ?.whereNotNull()
+          .map((e) => FacetResult.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      featuredResultsItems: (json['FeaturedResultsItems'] as List?)
+          ?.whereNotNull()
+          .map((e) => FeaturedResultsItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      retrieveId: json['RetrieveId'] as String?,
+      resultItems: (json['ResultItems'] as List?)
+          ?.whereNotNull()
+          .map((e) => RetrieveResultItem.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      spellCorrectedQueries: (json['SpellCorrectedQueries'] as List?)
+          ?.whereNotNull()
+          .map((e) => SpellCorrectedQuery.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      totalNumberOfResults: json['TotalNumberOfResults'] as int?,
+      warnings: (json['Warnings'] as List?)
+          ?.whereNotNull()
+          .map((e) => Warning.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
+enum RetrieveResultFormat {
+  table,
+  text,
+}
+
+extension RetrieveResultFormatValueExtension on RetrieveResultFormat {
+  String toValue() {
+    switch (this) {
+      case RetrieveResultFormat.table:
+        return 'TABLE';
+      case RetrieveResultFormat.text:
+        return 'TEXT';
+    }
+  }
+}
+
+extension RetrieveResultFormatFromString on String {
+  RetrieveResultFormat toRetrieveResultFormat() {
+    switch (this) {
+      case 'TABLE':
+        return RetrieveResultFormat.table;
+      case 'TEXT':
+        return RetrieveResultFormat.text;
+    }
+    throw Exception('$this is not known in enum RetrieveResultFormat');
+  }
+}
+
+/// A single retrieve result.
+///
+/// A retrieve result contains information about a document returned by the retrieve.
+/// This includes the original location of the document, a list of attributes
+/// assigned to the document, and relevant text from the document that satisfies
+/// the retrieve.
+class RetrieveResultItem {
+  final String? content;
+
+  /// An array of document attributes assigned to a document in the search
+  /// results. For example, the document author (<code>_author</code>) or the
+  /// source URI (<code>_source_uri</code>) of the document.
+  final List<DocumentAttribute>? documentAttributes;
+
+  /// The identifier for the document.
+  final String? documentId;
+
+  /// The title of the document. Contains the text of the title and information
+  /// for highlighting the relevant terms in the title.
+  final String? documentTitle;
+
+  /// The URI of the original location of the document.
+  final String? documentURI;
+
+  /// The identifier for the retrieve result.
+  final String? id;
+
+  /// Indicates the confidence that Amazon Kendra has that a result matches the
+  /// retrieve that you provided. Each result is placed into a bin that indicates the
+  /// confidence, <code>VERY_HIGH</code>, <code>HIGH</code>, <code>MEDIUM</code>
+  /// and <code>LOW</code>. You can use the score to determine if a response meets
+  /// the confidence needed for your application.
+  ///
+  /// The field is only set to <code>LOW</code> when the <code>Type</code> field
+  /// is set to <code>DOCUMENT</code> and Amazon Kendra is not confident that the
+  /// result matches the retrieve.
+  final ScoreAttributes? scoreAttributes;
+
+  RetrieveResultItem({
+    this.content,
+    this.documentAttributes,
+    this.documentId,
+    this.documentTitle,
+    this.documentURI,
+    this.id,
+    this.scoreAttributes
+  });
+
+  factory RetrieveResultItem.fromJson(Map<String, dynamic> json) {
+    return RetrieveResultItem(
+      content: json['Content'] as String?,
+      documentAttributes: (json['DocumentAttributes'] as List?)
+          ?.whereNotNull()
+          .map((e) => DocumentAttribute.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      documentId: json['DocumentId'] as String?,
+      documentTitle: json['DocumentTitle'] as String?,
+      documentURI: json['DocumentURI'] as String?,
+      id: json['Id'] as String?,
+      scoreAttributes: json['ScoreAttributes'] != null
+          ? ScoreAttributes.fromJson(
+              json['ScoreAttributes'] as Map<String, dynamic>)
+          : null
+    );
+  }
+}
+
+enum RetrieveResultType {
+  document,
+  questionAnswer,
+  answer,
+}
+
+extension RetrieveResultTypeValueExtension on RetrieveResultType {
+  String toValue() {
+    switch (this) {
+      case RetrieveResultType.document:
+        return 'DOCUMENT';
+      case RetrieveResultType.questionAnswer:
+        return 'QUESTION_ANSWER';
+      case RetrieveResultType.answer:
+        return 'ANSWER';
+    }
+  }
+}
+
+extension RetrieveResultTypeFromString on String {
+  RetrieveResultType toRetrieveResultType() {
+    switch (this) {
+      case 'DOCUMENT':
+        return RetrieveResultType.document;
+      case 'QUESTION_ANSWER':
+        return RetrieveResultType.questionAnswer;
+      case 'ANSWER':
+        return RetrieveResultType.answer;
+    }
+    throw Exception('$this is not known in enum RetrieveResultType');
   }
 }
 
